@@ -9,13 +9,13 @@ import (
 )
 
 func init() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	// todo check criu
-
 	// todo check runc
-
 }
 
 func main() {
+
 	var migratedContainerDir string
 	var destination string
 	var containerId string
