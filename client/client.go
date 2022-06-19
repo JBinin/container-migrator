@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"time"
 )
 
 func preDump(containerId string) error {
@@ -75,6 +76,8 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 	}
 	destPath := string(buf[:n])
 
+	totalStart := time.Now()
+
 	transfer(path.Join(othersPath, "config.json"), destination, destPath, "config.json")
 	transfer(path.Join(othersPath, "rootfs"), destination, destPath, "rootfs")
 
@@ -91,6 +94,7 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 		transfer(parentPath, destination, destPath, "preDump data")
 	}
 
+	start := time.Now()
 	if err5 := dump(containerID); err2 != nil {
 		log.Fatal(err5)
 		return err5
@@ -102,7 +106,19 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 		log.Fatal(err6)
 		return err6
 	}
-	return nil
+	var err7 error
+	if n, err7 = conn.Read(buf[:]); err7 == nil {
+		if string(buf[:n]) == "started" {
+			elapsed := time.Since(start)
+			log.Println("The downtime is ", elapsed)
+
+			totalElapsed := time.Since(totalStart)
+			log.Println("The total migration time is ", totalElapsed)
+
+			return nil
+		}
+	}
+	return err7
 }
 
 func PostCopy(containerID string, destination string) error {
