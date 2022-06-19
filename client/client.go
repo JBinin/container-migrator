@@ -75,8 +75,8 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 	}
 	destPath := string(buf[:n])
 
-	transfer(path.Join(othersPath, "config.json"), destPath, basePath, "config.json")
-	transfer(path.Join(othersPath, "rootfs"), destPath, basePath, "rootfs")
+	transfer(path.Join(othersPath, "config.json"), destination, destPath, "config.json")
+	transfer(path.Join(othersPath, "rootfs"), destination, destPath, "rootfs")
 
 	err3 := os.Chdir(basePath)
 	defer os.Chdir(oldDir)
