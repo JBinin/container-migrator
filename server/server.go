@@ -36,15 +36,21 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 
 	defer c.Close()
 	var buf [512]byte
-	n, err := c.Read(buf[:])
-	if err != nil {
-		log.Fatal(err)
+	n, err1 := c.Read(buf[:])
+	if err1 != nil {
+		log.Fatal(err1)
 	}
 	receive := string(buf[:n])
 	log.Println(receive)
 	if receive == "DestPath" {
 		c.Write([]byte(migratedContainerDir))
 	}
+	n, err1 = c.Read(buf[:])
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+	receive = string(buf[:n])
+	log.Println(receive)
 	if strings.HasPrefix(receive, "restore") {
 		cmd := strings.Split(receive, ":")
 		imagePath := path.Join(migratedContainerDir, "image")
