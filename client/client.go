@@ -10,22 +10,28 @@ import (
 )
 
 func preDump(containerId string) error {
+	start := time.Now()
 	args := []string{"checkpoint", "--pre-dump", "--image-path", "parent", containerId}
 	_, err := exec.Command("runc", args...).Output()
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
+	elapsed := time.Since(start)
+	log.Println("The pre dump time is ", elapsed)
 	return nil
 }
 
 func dump(containerID string) error {
+	start := time.Now()
 	args := []string{"checkpoint", "--image-path", "image", "--parent-path", "../parent", containerID}
 	_, err := exec.Command("runc", args...).Output()
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
+	elapsed := time.Since(start)
+	log.Println("The dump time is ", elapsed)
 	return nil
 }
 
