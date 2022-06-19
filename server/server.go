@@ -10,9 +10,14 @@ import (
 )
 
 func ListenAndServe(migratedContainerDir string) {
+	os.RemoveAll(migratedContainerDir)
+	os.MkdirAll(migratedContainerDir, os.ModePerm)
+
 	conn, err := net.Listen("tcp", ":8001")
+	defer conn.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err.Error())
+		return
 	}
 	for {
 		acc, err1 := conn.Accept()
@@ -25,16 +30,15 @@ func ListenAndServe(migratedContainerDir string) {
 }
 
 func handleConn(c net.Conn, migratedContainerDir string) {
+	defer c.Close()
+
 	f, err := os.OpenFile("server.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return
 	}
-	defer func() {
-		f.Close()
-	}()
+	defer f.Close()
 	log.SetOutput(f)
 
-	defer c.Close()
 	var buf [512]byte
 	n, err1 := c.Read(buf[:])
 	if err1 != nil {
@@ -54,12 +58,13 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 	if strings.HasPrefix(receive, "restore") {
 		cmd := strings.Split(receive, ":")
 		imagePath := path.Join(migratedContainerDir, "image")
-		args := []string{cmd[0], "--image-path", imagePath, cmd[1], " >output.log"}
+		args := []string{cmd[0], "--image-path", imagePath, cmd[1]}
 
 		oldDir, _ := os.Getwd()
 		os.Chdir(migratedContainerDir)
-		exec.Command("runc", args...)
+		exec.Command("runc", args...).Output()
 		os.Chdir(oldDir)
+		c.Write([]byte("started"))
 	}
 	log.Println("Handle finished.")
 }
