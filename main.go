@@ -15,7 +15,6 @@ func init() {
 }
 
 func main() {
-
 	var migratedContainerDir string
 	var destination string
 	var containerId string
@@ -72,6 +71,7 @@ func main() {
 						Name:        "migrated_container_dir",
 						Usage:       "The directory for saving the migrated container files.",
 						Destination: &migratedContainerDir,
+						Required:    true,
 					},
 				},
 				Action: func(context *cli.Context) error {
