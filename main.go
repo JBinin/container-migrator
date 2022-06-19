@@ -52,7 +52,6 @@ func main() {
 						Name:  "pre_copy",
 						Usage: "Using pre_copy mode.",
 						Action: func(context *cli.Context) error {
-							// todo
 							return client.PreCopy(containerId, destination, othersPath)
 						},
 					},
@@ -60,7 +59,6 @@ func main() {
 						Name:  "post_copy",
 						Usage: "Using post_copy mode.",
 						Action: func(context *cli.Context) error {
-							// todo
 							return client.PostCopy(containerId, destination)
 						},
 					},

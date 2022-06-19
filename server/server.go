@@ -58,11 +58,12 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 
 		oldDir, _ := os.Getwd()
 		os.Chdir(migratedContainerDir)
-		_, err := exec.Command("runc", args...).Output()
+		output, err := exec.Command("runc", args...).Output()
 		if err != nil {
 			log.Fatal(err)
 		}
 		os.Chdir(oldDir)
+		log.Println(output)
 	}
 	log.Println("Handle finished.")
 }
