@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net"
+	"os"
 	"os/exec"
 	"path"
 	"strings"
@@ -24,6 +25,15 @@ func ListenAndServe(migratedContainerDir string) {
 }
 
 func handleConn(c net.Conn, migratedContainerDir string) {
+	f, err := os.OpenFile("server.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
+	if err != nil {
+		return
+	}
+	defer func() {
+		f.Close()
+	}()
+	log.SetOutput(f)
+
 	defer c.Close()
 	var buf [512]byte
 	n, err := c.Read(buf[:])
@@ -31,6 +41,7 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 		log.Fatal(err)
 	}
 	receive := string(buf[:n])
+	log.Println(receive)
 	if receive == "DestPath" {
 		c.Write([]byte(migratedContainerDir))
 	}
@@ -44,4 +55,5 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			log.Fatal(err)
 		}
 	}
+	log.Println("Handle finished.")
 }
