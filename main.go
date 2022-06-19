@@ -19,6 +19,7 @@ func main() {
 	var migratedContainerDir string
 	var destination string
 	var containerId string
+	var othersPath string
 	app := &cli.App{
 		Name:  "migrate",
 		Usage: "Migrate containers.",
@@ -39,6 +40,12 @@ func main() {
 						Destination: &destination,
 						Required:    true,
 					},
+					&cli.StringFlag{
+						Name:        "others_path",
+						Usage:       "The file path of config.json and rootfs.",
+						Destination: &othersPath,
+						Required:    true,
+					},
 				},
 				Subcommands: []*cli.Command{
 					{
@@ -46,7 +53,7 @@ func main() {
 						Usage: "Using pre_copy mode.",
 						Action: func(context *cli.Context) error {
 							// todo
-							return client.PreCopy(containerId, destination)
+							return client.PreCopy(containerId, destination, othersPath)
 						},
 					},
 					{

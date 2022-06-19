@@ -28,12 +28,13 @@ func dump(containerID string) error {
 	return nil
 }
 
-func transfer(sourcePath string, destination string, destPath string) error {
+func transfer(sourcePath string, destination string, destPath string, info string) error {
 	if output, err := exec.Command("du", "-hs", sourcePath).Output(); err != nil {
 		log.Fatal(err)
 		return err
 	} else {
-		log.Println("DUMP size: ", string(output))
+		log.Println(info)
+		log.Println("Transfer size: ", string(output))
 	}
 	rsyncOpts := "-aqz"
 	dest := destination + ":" + destPath
@@ -44,7 +45,7 @@ func transfer(sourcePath string, destination string, destPath string) error {
 	return nil
 }
 
-func PreCopy(containerID string, destination string) error {
+func PreCopy(containerID string, destination string, othersPath string) error {
 	oldDir, _ := os.Getwd()
 	basePath := path.Join(oldDir, containerID)
 	os.RemoveAll(basePath)
@@ -74,6 +75,9 @@ func PreCopy(containerID string, destination string) error {
 	}
 	destPath := string(buf[:n])
 
+	transfer(path.Join(othersPath, "config.json"), destPath, basePath, "config.json")
+	transfer(path.Join(othersPath, "rootfs"), destPath, basePath, "rootfs")
+
 	err3 := os.Chdir(basePath)
 	defer os.Chdir(oldDir)
 	if err3 != nil {
@@ -84,14 +88,14 @@ func PreCopy(containerID string, destination string) error {
 		log.Fatal(err4)
 		return err4
 	} else {
-		transfer(parentPath, destination, destPath)
+		transfer(parentPath, destination, destPath, "preDump data")
 	}
 
 	if err5 := dump(containerID); err2 != nil {
 		log.Fatal(err5)
 		return err5
 	} else {
-		transfer(imagePath, destination, destPath)
+		transfer(imagePath, destination, destPath, "dump data")
 	}
 	_, err6 := conn.Write([]byte("restore:" + containerID))
 	if err6 != nil {
