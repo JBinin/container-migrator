@@ -30,6 +30,7 @@ func dump(containerID string) error {
 }
 
 func transfer(sourcePath string, destination string, destPath string, info string) error {
+	start := time.Now()
 	if output, err := exec.Command("du", "-hs", sourcePath).Output(); err != nil {
 		log.Fatal(err)
 		return err
@@ -43,6 +44,8 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 		log.Fatal(err3)
 		return err3
 	}
+	elapsed := time.Since(start)
+	log.Println("The transfer time is ", elapsed)
 	return nil
 }
 
