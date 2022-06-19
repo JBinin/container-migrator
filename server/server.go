@@ -38,8 +38,9 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 		cmd := strings.Split(receive, ":")
 		imagePath := path.Join(migratedContainerDir, "image")
 		args := []string{cmd[0], "--image-path", imagePath, cmd[1]}
-		_, err := exec.Command("runc", args...).Output()
+		output, err := exec.Command("runc", args...).Output()
 		if err != nil {
+			log.Println(output)
 			log.Fatal(err)
 		}
 	}
