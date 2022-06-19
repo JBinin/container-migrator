@@ -1,3 +1,3 @@
 BINARY="migrator"
 build:
-	go build -o $build ./main.go
+	go build -o ${BINARY} ./main.go
