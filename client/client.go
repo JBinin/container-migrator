@@ -9,7 +9,7 @@ import (
 )
 
 func preDump(containerId string) error {
-	args := []string{"checkpoint", "--pre--dump", "--image-path", "parent", containerId}
+	args := []string{"checkpoint", "--pre-dump", "--image-path", "parent", containerId}
 	_, err := exec.Command("runc", args...).Output()
 	if err != nil {
 		log.Fatal(err)
