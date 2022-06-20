@@ -64,11 +64,12 @@ func dump(containerID string, index int) error {
 
 func transfer(sourcePath string, destination string, destPath string, info string) (speed float64, size int, err error) {
 	start := time.Now()
-	var output []byte
-	if output, err = exec.Command("du", "-s", sourcePath).Output(); err != nil {
+
+	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
 		log.Fatal(err)
 		return 0, 0, err
 	} else {
+		size, _ = strconv.Atoi(string(output))
 		log.Println(info)
 		log.Println("Transfer size: ", string(output))
 	}
@@ -80,7 +81,6 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 	}
 	elapsed := time.Since(start)
 	log.Println("The transfer time is ", elapsed)
-	size, _ = strconv.Atoi(string(output))
 	return float64(size) / elapsed.Seconds(), size, nil
 }
 
