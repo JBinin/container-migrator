@@ -81,17 +81,14 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 	elapsed := time.Since(start)
 	log.Println("The transfer time is ", elapsed)
 	size, _ = strconv.Atoi(string(output))
-	return float64(size) / float64(elapsed.Seconds()), size, nil
+	return float64(size) / elapsed.Seconds(), size, nil
 }
 
 func PreCopy(containerID string, destination string, othersPath string) error {
 	oldDir, _ := os.Getwd()
 	basePath := path.Join(oldDir, containerID)
 	os.RemoveAll(basePath)
-	imagePath := path.Join(basePath, "image")
-	parentPath := path.Join(basePath, "parent")
-	os.MkdirAll(imagePath, os.ModePerm)
-	os.MkdirAll(parentPath, os.ModePerm)
+	os.MkdirAll(basePath, os.ModePerm)
 
 	var conn net.Conn
 	var err error
@@ -136,7 +133,8 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 			var D, T float64
 			D = 128 * 1024
 			T = 1
-			speed, size, err5 := transfer(parentPath, destination, destPath, "preDump data")
+			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
+			speed, size, err5 := transfer(preDumpPath, destination, destPath, "preDump data")
 			if err5 != nil {
 				log.Fatal(err5)
 				return err5
@@ -158,7 +156,8 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 		log.Fatal(err5)
 		return err5
 	} else {
-		transfer(imagePath, destination, destPath, "dump data")
+		dumpPath := path.Join(basePath, "checkpoint")
+		transfer(dumpPath, destination, destPath, "dump data")
 	}
 	_, err6 := conn.Write([]byte("restore:" + containerID))
 	if err6 != nil {

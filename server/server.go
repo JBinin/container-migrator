@@ -57,7 +57,7 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 	log.Println(receive)
 	if strings.HasPrefix(receive, "restore") {
 		cmd := strings.Split(receive, ":")
-		imagePath := path.Join(migratedContainerDir, "image")
+		imagePath := path.Join(migratedContainerDir, "checkpoint")
 		args := []string{cmd[0], "-d", "--image-path", imagePath, cmd[1]}
 
 		oldDir, _ := os.Getwd()
