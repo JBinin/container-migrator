@@ -133,7 +133,7 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 		} else {
 			var D, T float64
 			D = 128 * 1024
-			T = 1
+			T = 0.5
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
 			speed, size, err5 := transfer(preDumpPath, destination, destPath, "preDump data")
 			if err5 != nil {
