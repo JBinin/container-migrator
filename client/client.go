@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -69,7 +70,7 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 		log.Fatal(err)
 		return 0, 0, err
 	} else {
-		size, _ = strconv.Atoi(string(output))
+		size, _ = strconv.Atoi(strings.Split(string(output), " ")[0])
 		log.Println(info)
 		log.Println("Transfer size: ", string(output))
 	}
