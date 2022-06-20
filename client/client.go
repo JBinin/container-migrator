@@ -81,7 +81,7 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 	elapsed := time.Since(start)
 	log.Println("The transfer time is ", elapsed)
 	size, _ = strconv.Atoi(string(output))
-	return float64(size) / float64(elapsed.Milliseconds()), size, nil
+	return float64(size) / float64(elapsed.Seconds()), size, nil
 }
 
 func PreCopy(containerID string, destination string, othersPath string) error {
