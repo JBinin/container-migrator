@@ -6,25 +6,52 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"time"
 )
 
-func preDump(containerId string) error {
+func preDump(containerId string, index int) error {
 	start := time.Now()
-	args := []string{"checkpoint", "--pre-dump", "--image-path", "parent", containerId}
+	args := []string{
+		"checkpoint",
+		"--pre-dump",
+		"--image-path",
+		"checkpoint0",
+		containerId,
+	}
+	if index != 0 {
+		args = []string{
+			"checkpoint",
+			"--pre-dump",
+			"--image-path",
+			"checkpoint" + strconv.Itoa(index),
+			"--parent-path",
+			"../checkpoint" + strconv.Itoa(index-1),
+			containerId,
+		}
+	}
+
 	_, err := exec.Command("runc", args...).Output()
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
 	elapsed := time.Since(start)
+	log.Println("Pre index is ", index)
 	log.Println("The pre dump time is ", elapsed)
 	return nil
 }
 
-func dump(containerID string) error {
+func dump(containerID string, index int) error {
 	start := time.Now()
-	args := []string{"checkpoint", "--image-path", "image", "--parent-path", "../parent", containerID}
+	args := []string{
+		"checkpoint",
+		"--image-path",
+		"checkpoint",
+		"--parent-path",
+		"../checkpoint" + strconv.Itoa(index),
+		containerID,
+	}
 	_, err := exec.Command("runc", args...).Output()
 	if err != nil {
 		log.Fatal(err)
@@ -35,11 +62,12 @@ func dump(containerID string) error {
 	return nil
 }
 
-func transfer(sourcePath string, destination string, destPath string, info string) error {
+func transfer(sourcePath string, destination string, destPath string, info string) (speed float64, size int, err error) {
 	start := time.Now()
-	if output, err := exec.Command("du", "-hs", sourcePath).Output(); err != nil {
+	var output []byte
+	if output, err = exec.Command("du", "-s", sourcePath).Output(); err != nil {
 		log.Fatal(err)
-		return err
+		return 0, 0, err
 	} else {
 		log.Println(info)
 		log.Println("Transfer size: ", string(output))
@@ -48,11 +76,12 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 	dest := destination + ":" + destPath
 	if _, err3 := exec.Command("rsync", rsyncOpts, sourcePath, dest).Output(); err3 != nil {
 		log.Fatal(err3)
-		return err3
+		return 0, 0, err3
 	}
 	elapsed := time.Since(start)
 	log.Println("The transfer time is ", elapsed)
-	return nil
+	size, _ = strconv.Atoi(string(output))
+	return float64(size) / float64(elapsed.Milliseconds()), size, nil
 }
 
 func PreCopy(containerID string, destination string, othersPath string) error {
@@ -96,15 +125,36 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 		log.Fatal(err3)
 		return err3
 	}
-	if err4 := preDump(containerID); err4 != nil {
-		log.Fatal(err4)
-		return err4
-	} else {
-		transfer(parentPath, destination, destPath, "preDump data")
+	var index int
+	for i := 0; i < 10; i += 1 {
+		log.Println("The ", index, " iteration")
+		index = i
+		if err4 := preDump(containerID, i); err4 != nil {
+			log.Fatal(err4)
+			return err4
+		} else {
+			var D, T float64
+			D = 128 * 1024
+			T = 1
+			speed, size, err5 := transfer(parentPath, destination, destPath, "preDump data")
+			if err5 != nil {
+				log.Fatal(err5)
+				return err5
+			}
+			log.Println("Disk IO : ", D, " KB/s")
+			log.Println("Net speed: ", speed, " KB/s")
+
+			S := T * (D * speed / (2*speed + D))
+			log.Println("Expect memory size: ", S)
+			log.Println("Real memory size: ", size)
+			if float64(size) < S {
+				break
+			}
+		}
 	}
 
 	start := time.Now()
-	if err5 := dump(containerID); err2 != nil {
+	if err5 := dump(containerID, index); err2 != nil {
 		log.Fatal(err5)
 		return err5
 	} else {
