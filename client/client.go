@@ -70,11 +70,7 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 		log.Fatal(err)
 		return 0, 0, err
 	} else {
-		size, _ = strconv.Atoi(strings.Split(string(output), " ")[0])
-		tmp := strings.Split(string(output), " ")
-		for k, v := range tmp {
-			log.Println(k, ",", v)
-		}
+		size, _ = strconv.Atoi(strings.Split(string(output), "\t")[0])
 		log.Println(info)
 		log.Println("Transfer size: ", string(output))
 	}
