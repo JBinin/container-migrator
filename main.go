@@ -45,6 +45,11 @@ func main() {
 						Destination: &othersPath,
 						Required:    true,
 					},
+					&cli.Float64Flag{
+						Name:        "expected_time",
+						Usage:       "The expected down time.",
+						Destination: &client.T,
+					},
 				},
 				Subcommands: []*cli.Command{
 					{

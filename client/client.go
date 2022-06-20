@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var T float64 = 1
+
 func preDump(containerId string, index int) error {
 	start := time.Now()
 	args := []string{
@@ -131,9 +133,8 @@ func PreCopy(containerID string, destination string, othersPath string) error {
 			log.Fatal(err4)
 			return err4
 		} else {
-			var D, T float64
+			var D float64
 			D = 128 * 1024
-			T = 0.5
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
 			speed, size, err5 := transfer(preDumpPath, destination, destPath, "preDump data")
 			if err5 != nil {
