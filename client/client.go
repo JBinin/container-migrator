@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"log"
 	"net"
 	"os"
@@ -54,120 +55,149 @@ func dump(containerID string, index int) error {
 	return nil
 }
 
-func transfer(sourcePath string, destination string, destPath string, info string) (speed float64, size int, err error) {
+func transfer(sourcePath string, destIP string, destPath string) (float64, int, error) {
 	start := time.Now()
-
+	speed := 0.0
+	size := 0
 	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
-		log.Fatal(err)
-		return 0, 0, err
+		log.Println(output)
+		return speed, size, err
 	} else {
 		size, _ = strconv.Atoi(strings.Split(string(output), "\t")[0])
-		log.Println(info)
-		log.Println("Transfer size: ", string(output))
+		log.Println("Transfer size: ", size, " KB")
 	}
 	rsyncOpts := "-aqz"
-	dest := destination + ":" + destPath
-	if _, err3 := exec.Command("rsync", rsyncOpts, sourcePath, dest).Output(); err3 != nil {
-		log.Fatal(err3)
-		return 0, 0, err3
+	dest := destIP + ":" + destPath
+	if output, err := exec.Command("rsync", rsyncOpts, sourcePath, dest).Output(); err != nil {
+		log.Println(output)
+		return speed, size, err
 	}
 	elapsed := time.Since(start)
 	log.Println("The transfer time is ", elapsed)
-	return float64(size) / elapsed.Seconds(), size, nil
+	speed = float64(size) / elapsed.Seconds()
+	return speed, size, nil
 }
 
-func PreCopy(containerID string, destination string, othersPath string) error {
-	oldDir, _ := os.Getwd()
-	basePath := path.Join(oldDir, containerID)
-	_ = os.RemoveAll(basePath)
-	_ = os.MkdirAll(basePath, os.ModePerm)
-
-	var conn net.Conn
-	var err error
-	conn, err = net.Dial("tcp", destination+":8001")
-	defer conn.Close()
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	if _, err1 := conn.Write([]byte("DestPath")); err1 != nil {
-		log.Fatal(err1)
-		return err1
-	}
-	buf := [512]byte{}
-	n, err2 := conn.Read(buf[:])
-	if err2 != nil {
-		log.Fatal(err2)
-		return err2
-	}
-	destPath := string(buf[:n])
-
-	totalStart := time.Now()
-
-	transfer(path.Join(othersPath, "config.json"), destination, destPath, "config.json")
-	transfer(path.Join(othersPath, "rootfs"), destination, destPath, "rootfs")
-
-	err3 := os.Chdir(basePath)
-	defer os.Chdir(oldDir)
-	if err3 != nil {
-		log.Fatal(err3)
-		return err3
-	}
+func iterator(containerID string, basePath string, destIP string, destPath string) (int, error) {
 	var index int
 	for i := 0; i < 10; i += 1 {
 		log.Println("The ", index, " iteration")
 		index = i
-		if err4 := preDump(containerID, i); err4 != nil {
-			log.Fatal(err4)
-			return err4
+		if err := preDump(containerID, i); err != nil {
+			log.Println("Pre dump failed ")
+			return index, err
 		} else {
 			var D float64
 			D = 128 * 1024
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
-			speed, size, err5 := transfer(preDumpPath, destination, destPath, "preDump data")
-			if err5 != nil {
-				log.Fatal(err5)
-				return err5
-			}
-			log.Println("Disk IO : ", D, " KB/s")
-			log.Println("Net speed: ", speed, " KB/s")
-
-			S := T * (D * speed / (2*speed + D))
-			log.Println("Expect memory size: ", S)
-			log.Println("Real memory size: ", size)
-			if float64(size) < S {
-				break
+			log.Println("Pre dump")
+			if speed, size, err := transfer(preDumpPath, destIP, destPath); err != nil {
+				log.Println("Transfer pre data failed")
+				return index, err
+			} else {
+				log.Println("Disk IO : ", D, " KB/s")
+				log.Println("Net speed: ", speed, " KB/s")
+				S := T * (D * speed / (2*speed + D))
+				log.Println("Expect memory size: ", S)
+				log.Println("Real memory size: ", size)
+				if float64(size) < S {
+					break
+				}
 			}
 		}
 	}
+	return index, nil
+}
 
-	start := time.Now()
-	if err5 := dump(containerID, index); err2 != nil {
-		log.Fatal(err5)
-		return err5
+func PreCopy(containerID string, destIP string, othersPath string) error {
+	oldDir, _ := os.Getwd()
+	basePath := path.Join(oldDir, containerID)
+	if err := os.RemoveAll(basePath); err != nil {
+		log.Println("Remove ", basePath, " failed")
+		return err
+	}
+	if err := os.MkdirAll(basePath, os.ModePerm); err != nil {
+		log.Println("Mkdir ", basePath, " failed")
+	}
+
+	var conn net.Conn
+	var conErr error
+	conn, conErr = net.Dial("tcp", destIP+":8001")
+	defer conn.Close()
+	if conErr != nil {
+		log.Println("Tcp connect failed")
+		return conErr
+	}
+
+	if _, err := conn.Write([]byte("DestPath")); err != nil {
+		log.Println("Get DestPath failed")
+		return err
+	}
+
+	buf := [512]byte{}
+	var destPath string
+	if n, err := conn.Read(buf[:]); err != nil {
+		log.Println("Get DestPath failed")
+		return err
 	} else {
-		dumpPath := path.Join(basePath, "checkpoint")
-		transfer(dumpPath, destination, destPath, "dump data")
+		destPath = string(buf[:n])
 	}
-	_, err6 := conn.Write([]byte("restore:" + containerID))
-	if err6 != nil {
-		log.Fatal(err6)
-		return err6
+
+	totalStart := time.Now()
+
+	log.Println("Transfer config.json")
+	if _, _, err := transfer(path.Join(othersPath, "config.json"), destIP, destPath); err != nil {
+		log.Println("Transfer config failed")
+		return err
 	}
-	var err7 error
-	if n, err7 = conn.Read(buf[:]); err7 == nil {
-		if string(buf[:n]) == "started" {
-			elapsed := time.Since(start)
-			log.Println("The downtime is ", elapsed)
+	log.Println("Transfer rootfs")
+	if _, _, err := transfer(path.Join(othersPath, "rootfs"), destIP, destPath); err != nil {
+		log.Println("Transfer rootfs failed")
+		return err
+	}
 
-			totalElapsed := time.Since(totalStart)
-			log.Println("The total migration time is ", totalElapsed)
+	if err := os.Chdir(basePath); err != nil {
+		log.Println("Failed to change the work directory")
+		return err
+	}
+	defer os.Chdir(oldDir)
 
-			return nil
+	if index, err := iterator(containerID, basePath, destIP, destPath); err != nil {
+		log.Println("Iterator transfer failed")
+		return err
+	} else {
+		start := time.Now()
+		if err := dump(containerID, index); err != nil {
+			log.Println("Dump data failed")
+			return err
+		} else {
+			dumpPath := path.Join(basePath, "checkpoint")
+			log.Println("Dump data")
+			if _, _, err := transfer(dumpPath, destIP, destPath); err != nil {
+				log.Println("Transfer dump data failed")
+				return err
+			}
+		}
+		if _, err := conn.Write([]byte("restore:" + containerID)); err != nil {
+			log.Println("Send restore cmd failed")
+			return err
+		}
+		if n, err := conn.Read(buf[:]); err != nil {
+			log.Println("Waiting for restore container in another machine")
+			return err
+		} else {
+			if string(buf[:n]) == "started" {
+				elapsed := time.Since(start)
+				log.Println("The downtime is ", elapsed)
+			} else {
+				log.Println("Restore error in remote machine")
+				return errors.New("Restore failed ")
+			}
 		}
 	}
-	return err7
+	totalElapsed := time.Since(totalStart)
+	log.Println("The total migration time is ", totalElapsed)
+	return nil
 }
 
 func PostCopy(containerID string, destination string) error {
