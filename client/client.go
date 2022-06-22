@@ -87,11 +87,11 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 			log.Println("Pre dump failed ")
 			return index, err
 		} else {
-			var D float64
-			D = 128 * 1024
+			D := 128 * 1024.0
+			speed := 500000.0
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
 			log.Println("Pre dump")
-			if speed, size, err := transfer(preDumpPath, destIP, destPath); err != nil {
+			if _, size, err := transfer(preDumpPath, destIP, destPath); err != nil {
 				log.Println("Transfer pre data failed")
 				return index, err
 			} else {
