@@ -66,7 +66,7 @@ func transfer(sourcePath string, destIP string, destPath string) (float64, int, 
 		size, _ = strconv.Atoi(strings.Split(string(output), "\t")[0])
 		log.Println("Transfer size: ", size, " KB")
 	}
-	rsyncOpts := "-aqz"
+	rsyncOpts := "-aqz --bwlimit=500000"
 	dest := destIP + ":" + destPath
 	if output, err := exec.Command("rsync", rsyncOpts, sourcePath, dest).Output(); err != nil {
 		log.Println(output)
