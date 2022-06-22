@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// T the max expected time of downtime(s)
 var T float64 = 1
 
 func preDump(containerId string, index int) error {
@@ -19,29 +20,18 @@ func preDump(containerId string, index int) error {
 		"checkpoint",
 		"--pre-dump",
 		"--image-path",
-		"checkpoint0",
-		containerId,
+		"checkpoint" + strconv.Itoa(index),
 	}
 	if index != 0 {
-		args = []string{
-			"checkpoint",
-			"--pre-dump",
-			"--image-path",
-			"checkpoint" + strconv.Itoa(index),
-			"--parent-path",
-			"../checkpoint" + strconv.Itoa(index-1),
-			containerId,
-		}
+		args = append(args, "--parent-path", "../checkpoint"+strconv.Itoa(index-1))
 	}
-
-	_, err := exec.Command("runc", args...).Output()
-	if err != nil {
-		log.Fatal(err)
+	args = append(args, containerId)
+	if output, err := exec.Command("runc", args...).Output(); err != nil {
+		log.Println(output)
 		return err
 	}
 	elapsed := time.Since(start)
-	log.Println("Pre index is ", index)
-	log.Println("The pre dump time is ", elapsed)
+	log.Println("The pre-dump index is ", index, " . The pre-dump time is ", elapsed)
 	return nil
 }
 
@@ -55,9 +45,8 @@ func dump(containerID string, index int) error {
 		"../checkpoint" + strconv.Itoa(index),
 		containerID,
 	}
-	_, err := exec.Command("runc", args...).Output()
-	if err != nil {
-		log.Fatal(err)
+	if output, err := exec.Command("runc", args...).Output(); err != nil {
+		log.Println(output)
 		return err
 	}
 	elapsed := time.Since(start)
@@ -90,8 +79,8 @@ func transfer(sourcePath string, destination string, destPath string, info strin
 func PreCopy(containerID string, destination string, othersPath string) error {
 	oldDir, _ := os.Getwd()
 	basePath := path.Join(oldDir, containerID)
-	os.RemoveAll(basePath)
-	os.MkdirAll(basePath, os.ModePerm)
+	_ = os.RemoveAll(basePath)
+	_ = os.MkdirAll(basePath, os.ModePerm)
 
 	var conn net.Conn
 	var err error
