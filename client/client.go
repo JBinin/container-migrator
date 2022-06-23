@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -111,6 +112,22 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 	return index, nil
 }
 
+func syncDir(destPath string, destIP string, othersPath string) error {
+	dir, err := ioutil.ReadDir(othersPath)
+	if err != nil {
+		log.Println("Open ", othersPath, " failed")
+		return err
+	}
+	for _, fi := range dir {
+		absPath := path.Join(othersPath, fi.Name())
+		if _, _, err := transfer(absPath, destIP, destPath); err != nil {
+			log.Println("Failed to transfer ", absPath)
+			return err
+		}
+	}
+	return nil
+}
+
 func PreCopy(containerID string, destIP string, othersPath string) error {
 	oldDir, _ := os.Getwd()
 	basePath := path.Join(oldDir, containerID)
@@ -147,14 +164,8 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 
 	totalStart := time.Now()
 
-	log.Println("Transfer config.json")
-	if _, _, err := transfer(path.Join(othersPath, "config.json"), destIP, destPath); err != nil {
-		log.Println("Transfer config failed")
-		return err
-	}
-	log.Println("Transfer rootfs")
-	if _, _, err := transfer(path.Join(othersPath, "rootfs"), destIP, destPath); err != nil {
-		log.Println("Transfer rootfs failed")
+	if err := syncDir(destPath, destIP, othersPath); err != nil {
+		log.Println("Sync dir failed")
 		return err
 	}
 
@@ -177,6 +188,10 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 			log.Println("Dump data")
 			if _, _, err := transfer(dumpPath, destIP, destPath); err != nil {
 				log.Println("Transfer dump data failed")
+				return err
+			}
+			if err := syncDir(destPath, destIP, othersPath); err != nil {
+				log.Println("Sync dir failed")
 				return err
 			}
 		}

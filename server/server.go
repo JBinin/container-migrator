@@ -72,9 +72,9 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			os.Chdir(migratedContainerDir)
 			defer os.Chdir(oldDir)
 
-			if _, err := exec.Command("runc", args...).Output(); err != nil {
+			if output, err := exec.Command("runc", args...).Output(); err != nil {
 				log.Println("Failed to restore the contaier")
-				log.Println(err.Error())
+				log.Println(output)
 				return
 			} else {
 				if _, err := c.Write([]byte("started")); err != nil {
