@@ -76,7 +76,7 @@ func dump(containerID string, index int) (dumpTime float64, err error) {
 	return elapsed.Seconds(), nil
 }
 
-func transfer(sourcePath string, destIP string, destPath string, otherOpts []string) (transferTime float64, size int, err error) {
+func transfer(sourcePath string, destIP string, destPath string) (transferTime float64, size int, err error) {
 	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
 		log.Println(output)
 		return 0, 0, err
@@ -86,9 +86,6 @@ func transfer(sourcePath string, destIP string, destPath string, otherOpts []str
 	}
 	dest := destIP + ":" + destPath
 	rsyncOpts := []string{"-aqz", "--bwlimit=500000", sourcePath, dest}
-	if otherOpts != nil {
-		rsyncOpts = append(otherOpts, rsyncOpts...)
-	}
 	start := time.Now()
 	if output, err := exec.Command("rsync", rsyncOpts...).Output(); err != nil {
 		log.Println(output)
@@ -111,7 +108,7 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 			D := 128 * 1024.0
 			N := 1.25e5
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
-			if transferTime, size, err := transfer(preDumpPath, destIP, destPath, nil); err != nil {
+			if transferTime, size, err := transfer(preDumpPath, destIP, destPath); err != nil {
 				log.Println("The ", index, "iteration transfer pre data failed")
 				return index, err
 			} else {
@@ -135,7 +132,7 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 	return index, nil
 }
 
-func syncDir(destPath string, destIP string, othersPath string, otherOpts []string) error {
+func syncDir(destPath string, destIP string, othersPath string, exclude map[string]bool) error {
 	dir, err := ioutil.ReadDir(othersPath)
 	if err != nil {
 		log.Println("Open ", othersPath, " failed")
@@ -143,8 +140,13 @@ func syncDir(destPath string, destIP string, othersPath string, otherOpts []stri
 	}
 	start := time.Now()
 	for _, fi := range dir {
+		if exclude != nil {
+			if _, ok := exclude[fi.Name()]; ok {
+				continue
+			}
+		}
 		absPath := path.Join(othersPath, fi.Name())
-		if _, _, err := transfer(absPath, destIP, destPath, otherOpts); err != nil {
+		if _, _, err := transfer(absPath, destIP, destPath); err != nil {
 			log.Println("Failed to transfer ", absPath)
 			return err
 		}
@@ -212,12 +214,16 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 			return err
 		} else {
 			dumpPath := path.Join(basePath, "checkpoint")
-			if transferTime, size, err := transfer(dumpPath, destIP, destPath, nil); err != nil {
+			if transferTime, size, err := transfer(dumpPath, destIP, destPath); err != nil {
 				log.Println("Transfer dump data failed")
 				return err
 			} else {
-				otherOpts := []string{"--exclude", "rootfs/", "--exclude", "config.json"}
-				if err := syncDir(destPath, destIP, othersPath, otherOpts); err != nil {
+				var exclude map[string]bool
+				exclude["rootfs"] = true
+				exclude["config.json"] = true
+				exclude["redis.md"] = true
+				exclude["redis.sh"] = true
+				if err := syncDir(destPath, destIP, othersPath, exclude); err != nil {
 					log.Println("Sync dir failed")
 					return err
 				}
