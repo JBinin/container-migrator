@@ -1,0 +1,1 @@
+oci-runtime-tool generate --mounts-add '{"destination": "/data","type": "bind","source": "data","options": ["rbind","rw"]}' --process-cwd=/data --args /bin/sh --args ./start.sh > config.json
