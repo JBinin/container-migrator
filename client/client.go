@@ -20,6 +20,7 @@ func preDump(containerId string, index int) error {
 	args := []string{
 		"checkpoint",
 		"--pre-dump",
+		"--tcp-established",
 		"--image-path",
 		"checkpoint" + strconv.Itoa(index),
 	}
@@ -40,6 +41,7 @@ func dump(containerID string, index int) error {
 	start := time.Now()
 	args := []string{
 		"checkpoint",
+		"--tcp-established",
 		"--image-path",
 		"checkpoint",
 		"--parent-path",
