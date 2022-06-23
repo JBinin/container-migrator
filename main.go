@@ -56,7 +56,6 @@ func main() {
 						Name:  "pre_copy",
 						Usage: "Using pre_copy mode.",
 						Action: func(context *cli.Context) error {
-							defer client.PrintInfo()
 							return client.PreCopy(containerId, destination, othersPath)
 						},
 					},

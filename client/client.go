@@ -155,6 +155,7 @@ func syncDir(destPath string, destIP string, othersPath string, otherOpts []stri
 }
 
 func PreCopy(containerID string, destIP string, othersPath string) error {
+	defer PrintInfo()
 	oldDir, _ := os.Getwd()
 	basePath := path.Join(oldDir, containerID)
 	if err := os.RemoveAll(basePath); err != nil {
