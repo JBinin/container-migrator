@@ -218,7 +218,7 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 				log.Println("Transfer dump data failed")
 				return err
 			} else {
-				var exclude map[string]bool
+				exclude := make(map[string]bool)
 				exclude["rootfs"] = true
 				exclude["config.json"] = true
 				exclude["redis.md"] = true
