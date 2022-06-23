@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"time"
 )
 
 func ListenAndServe(migratedContainerDir string) {
@@ -72,6 +73,7 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			os.Chdir(migratedContainerDir)
 			defer os.Chdir(oldDir)
 
+			start := time.Now()
 			if err := exec.Command("runc", args...).Run(); err != nil {
 				log.Println("Failed to restore the contaier")
 				return
@@ -81,6 +83,8 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 					return
 				}
 			}
+			elapsed := time.Since(start)
+			log.Println("Restore time is ", elapsed)
 		}
 	}
 	log.Println("Handle finished.")

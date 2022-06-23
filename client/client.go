@@ -87,6 +87,7 @@ func transfer(sourcePath string, destIP string, destPath string, otherOpts []str
 func iterator(containerID string, basePath string, destIP string, destPath string) (int, error) {
 	var index int
 	for i := 0; i < 10; i += 1 {
+		log.Println("-----------------")
 		log.Println("The ", index, " iteration")
 		index = i
 		if err := preDump(containerID, i); err != nil {
@@ -96,7 +97,6 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 			D := 128 * 1024.0
 			speed := 500000.0
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
-			log.Println("Pre dump")
 			if _, size, err := transfer(preDumpPath, destIP, destPath, nil); err != nil {
 				log.Println("Transfer pre data failed")
 				return index, err
@@ -106,6 +106,7 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 				S := T * (D * speed / (2*speed + D))
 				log.Println("Expect memory size: ", S)
 				log.Println("Real memory size: ", size)
+				log.Println("-----------------")
 				if float64(size) < S {
 					break
 				}
