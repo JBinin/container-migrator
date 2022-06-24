@@ -166,7 +166,7 @@ func syncVolume(destPath string, destIP string, othersPath string) error {
 func PreCopy(containerID string, destIP string, othersPath string) error {
 	defer PrintInfo()
 	oldDir, _ := os.Getwd()
-	basePath := path.Join(oldDir, containerID)
+	basePath := path.Join(oldDir, "redis", containerID)
 	if err := os.RemoveAll(basePath); err != nil {
 		log.Println("Remove ", basePath, " failed")
 		return err
