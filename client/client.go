@@ -2,7 +2,6 @@ package client
 
 import (
 	"errors"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -132,27 +131,35 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 	return index, nil
 }
 
-func syncDir(destPath string, destIP string, othersPath string, exclude map[string]bool) error {
-	dir, err := ioutil.ReadDir(othersPath)
-	if err != nil {
-		log.Println("Open ", othersPath, " failed")
+func syncReadOnly(destPath string, destIP string, othersPath string) error {
+	if transferTime, size, err := transfer(path.Join(othersPath, "config.json"), destIP, destPath); err != nil {
+		log.Println("Failed to sync the config.json")
 		return err
+	} else {
+		log.Println("--------------config.json------------------")
+		log.Println("data size : ", size, "\t", "transfer time(s): ", transferTime)
+		log.Println("--------------------------------------------")
 	}
-	start := time.Now()
-	for _, fi := range dir {
-		if exclude != nil {
-			if _, ok := exclude[fi.Name()]; ok {
-				continue
-			}
-		}
-		absPath := path.Join(othersPath, fi.Name())
-		if _, _, err := transfer(absPath, destIP, destPath); err != nil {
-			log.Println("Failed to transfer ", absPath)
-			return err
-		}
+	if transferTime, size, err := transfer(path.Join(othersPath, "rootfs"), destIP, destPath); err != nil {
+		log.Println("Failed to sync the rootfs")
+		return err
+	} else {
+		log.Println("--------------rootfs------------------")
+		log.Println("data size : ", size, "\t", "transfer time(s): ", transferTime)
+		log.Println("--------------------------------------------")
 	}
-	elapsed := time.Since(start)
-	log.Println("Sync time is ", elapsed)
+	return nil
+}
+
+func syncVolume(destPath string, destIP string, othersPath string) error {
+	if transferTime, size, err := transfer(path.Join(othersPath, "data"), destIP, destPath); err != nil {
+		log.Println("Failed to sync the volume")
+		return err
+	} else {
+		log.Println("--------------volume------------------")
+		log.Println("data size : ", size, "\t", "transfer time(s): ", transferTime)
+		log.Println("--------------------------------------------")
+	}
 	return nil
 }
 
@@ -193,8 +200,8 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 
 	totalStart := time.Now()
 
-	if err := syncDir(destPath, destIP, othersPath, nil); err != nil {
-		log.Println("Sync dir failed")
+	if err := syncReadOnly(destPath, destIP, othersPath); err != nil {
+		log.Println("Sync readonly dir failed")
 		return err
 	}
 
@@ -204,7 +211,8 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 	}
 	defer os.Chdir(oldDir)
 
-	if index, err := iterator(containerID, basePath, destIP, destPath); err != nil {
+	checkpointDestPath := path.Join(destPath, containerID)
+	if index, err := iterator(containerID, basePath, destIP, checkpointDestPath); err != nil {
 		log.Println("Iterator transfer failed")
 		return err
 	} else {
@@ -214,18 +222,12 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 			return err
 		} else {
 			dumpPath := path.Join(basePath, "checkpoint")
-			if transferTime, size, err := transfer(dumpPath, destIP, destPath); err != nil {
+			if transferTime, size, err := transfer(dumpPath, destIP, checkpointDestPath); err != nil {
 				log.Println("Transfer dump data failed")
 				return err
 			} else {
-				exclude := make(map[string]bool)
-				exclude["rootfs"] = true
-				exclude["config.json"] = true
-				exclude["redis.md"] = true
-				exclude["redis.sh"] = true
-				if err := syncDir(destPath, destIP, othersPath, exclude); err != nil {
-					log.Println("Sync dir failed")
-					return err
+				if err := syncVolume(destPath, destIP, othersPath); err != nil {
+					log.Println("Failed to sync the volume")
 				}
 				log.Println("---------------------dump------------------------")
 				log.Println("dumpTime(s)\t", "data size(KB)\t", "transfer time(s)")
