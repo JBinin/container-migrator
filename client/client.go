@@ -186,8 +186,8 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 		return conErr
 	}
 
-	if _, err := conn.Write([]byte("DestPath")); err != nil {
-		log.Println("Get DestPath failed")
+	if _, err := conn.Write([]byte(containerID)); err != nil {
+		log.Println("Send container id or get DestPath failed")
 		return err
 	}
 
