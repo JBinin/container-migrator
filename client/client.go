@@ -98,13 +98,13 @@ func transfer(sourcePath string, destIP string, destPath string) (transferTime f
 
 func iterator(containerID string, basePath string, destIP string, destPath string) (int, error) {
 	var index int
-	D := 128 * 1024.0
+	D := 1e5
 	N := 1.25e5
-	S := T * (D * N / (2*N + D))
+	S := T * (D * N / (2*N + D)) * 1024 / 1000
 	log.Println("-----------------------------------")
 	log.Println("Disk IO : ", D, " KB/s")
 	log.Println("Net speed: ", N, " KB/s")
-	log.Println("Expect memory size: ", S)
+	log.Println("Expect memory size: ", S, "KB")
 	log.Println("-----------------------------------")
 
 	for i := 0; i < 10; i += 1 {
