@@ -194,7 +194,10 @@
 					"allow": false,
 					"access": "rwm"
 				}
-			]
+			],
+			"cpu": {
+				"cpus": "0"
+			}
 		},
 		"namespaces": [
 			{
