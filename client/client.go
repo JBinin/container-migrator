@@ -25,8 +25,8 @@ type transferInfo struct {
 var Info []transferInfo
 
 func PrintInfo() {
-	log.Println("-------------PrintInfo---------------------------------------------")
-	log.Println("index\t", "data size(KB)\t\t", "pre-time(s)\t", "transfer-time(s)\t")
+	log.Println("---------------------PrintInfo--------------------------------------")
+	log.Println("index\t", "data-size(KB)\t\t", "pre-time(s)\t", "transfer-time(s)\t")
 	for _, f := range Info {
 		log.Println(f.index, "\t", f.data, "\t\t", f.preTime, "\t", f.transferTime)
 	}
@@ -98,26 +98,26 @@ func transfer(sourcePath string, destIP string, destPath string) (transferTime f
 
 func iterator(containerID string, basePath string, destIP string, destPath string) (int, error) {
 	var index int
+	D := 128 * 1024.0
+	N := 1.25e5
+	S := T * (D * N / (2*N + D))
+	log.Println("-----------------------------------")
+	log.Println("Disk IO : ", D, " KB/s")
+	log.Println("Net speed: ", N, " KB/s")
+	log.Println("Expect memory size: ", S)
+	log.Println("-----------------------------------")
+
 	for i := 0; i < 10; i += 1 {
 		index = i
 		if preTime, err := preDump(containerID, i); err != nil {
 			log.Println("The ", index, "iteration pre dump failed ")
 			return index, err
 		} else {
-			D := 128 * 1024.0
-			N := 1.25e5
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
 			if transferTime, size, err := transfer(preDumpPath, destIP, destPath); err != nil {
 				log.Println("The ", index, "iteration transfer pre data failed")
 				return index, err
 			} else {
-				log.Println("------------------------------")
-				log.Println("Disk IO : ", D, " KB/s")
-				log.Println("Net speed: ", N, " KB/s")
-				S := T * (D * N / (2*N + D))
-				log.Println("Expect memory size: ", S)
-				log.Println("Real memory size: ", size)
-				log.Println("------------------------------")
 				Info = append(Info, transferInfo{
 					index:        index,
 					data:         float64(size),
@@ -138,17 +138,17 @@ func syncReadOnly(destPath string, destIP string, othersPath string) error {
 		log.Println("Failed to sync the config.json")
 		return err
 	} else {
-		log.Println("--------------config.json------------------")
-		log.Println("data size : ", size, "\t", "transfer time(s): ", transferTime)
-		log.Println("--------------------------------------------")
+		log.Println("-----------------config.json------------------")
+		log.Println("data-size(KB) : ", size, "\t", "transfer time(s): ", transferTime)
+		log.Println("----------------------------------------------")
 	}
 	if transferTime, size, err := transfer(path.Join(othersPath, "rootfs"), destIP, destPath); err != nil {
 		log.Println("Failed to sync the rootfs")
 		return err
 	} else {
-		log.Println("--------------rootfs------------------")
-		log.Println("data size : ", size, "\t", "transfer time(s): ", transferTime)
-		log.Println("--------------------------------------------")
+		log.Println("--------------------rootfs--------------------")
+		log.Println("data-size(KB) : ", size, "\t", "transfer time(s): ", transferTime)
+		log.Println("----------------------------------------------")
 	}
 	return nil
 }
@@ -158,8 +158,8 @@ func syncVolume(destPath string, destIP string, othersPath string) error {
 		log.Println("Failed to sync the volume")
 		return err
 	} else {
-		log.Println("--------------volume------------------")
-		log.Println("data size : ", size, "\t", "transfer time(s): ", transferTime)
+		log.Println("----------------volume----------------------")
+		log.Println("data-size(KB) : ", size, "\t", "transfer time(s): ", transferTime)
 		log.Println("--------------------------------------------")
 	}
 	return nil
@@ -232,7 +232,7 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 					log.Println("Failed to sync the volume")
 				}
 				log.Println("---------------------dump------------------------")
-				log.Println("dumpTime(s)\t", "data size(KB)\t", "transfer time(s)")
+				log.Println("dumpTime(s)\t", "data-size(KB)\t", "transfer time(s)")
 				log.Println(dumpTime, "\t", size, "\t", transferTime, "\t")
 				log.Println("-------------------------------------------------")
 			}
