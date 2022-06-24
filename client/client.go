@@ -26,9 +26,9 @@ var Info []transferInfo
 
 func PrintInfo() {
 	log.Println("-------------PrintInfo---------------------------------------------")
-	log.Println("index\t", "data size(KB)\t", "pre-time(s)\t", "transfer-time(s)\t")
+	log.Println("index\t", "data size(KB)\t\t", "pre-time(s)\t", "transfer-time(s)\t")
 	for _, f := range Info {
-		log.Println(f.index, "\t", f.data, "\t", f.preTime, "\t", f.transferTime)
+		log.Println(f.index, "\t", f.data, "\t\t", f.preTime, "\t", f.transferTime)
 	}
 	log.Println("--------------------------------------------------------------------")
 }
@@ -111,11 +111,13 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 				log.Println("The ", index, "iteration transfer pre data failed")
 				return index, err
 			} else {
+				log.Println("------------------------------")
 				log.Println("Disk IO : ", D, " KB/s")
 				log.Println("Net speed: ", N, " KB/s")
 				S := T * (D * N / (2*N + D))
 				log.Println("Expect memory size: ", S)
 				log.Println("Real memory size: ", size)
+				log.Println("------------------------------")
 				Info = append(Info, transferInfo{
 					index:        index,
 					data:         float64(size),
