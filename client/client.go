@@ -29,7 +29,7 @@ func PrintInfo() {
 	log.Println("-------------PrintInfo---------------------------------------------")
 	log.Println("index\t", "data size(KB)\t", "pre-time(s)\t", "transfer-time(s)\t")
 	for _, f := range Info {
-		log.Println(f.index, "\t", f.data, "\t", f.preTime)
+		log.Println(f.index, "\t", f.data, "\t", f.preTime, "\t", f.transferTime)
 	}
 	log.Println("--------------------------------------------------------------------")
 }
