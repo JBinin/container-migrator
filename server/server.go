@@ -45,16 +45,19 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 
 	var buf [512]byte
 	if n, err := c.Read(buf[:]); err != nil {
-		log.Println("Failed to receive DestPath cmd")
+		log.Println("Failed to receive container id")
 		return
 	} else {
-		receive := string(buf[:n])
-		log.Println(receive)
-		if receive == "DestPath" {
-			if _, err := c.Write([]byte(migratedContainerDir)); err != nil {
-				log.Println("Failed to send the migratedContainerDir to client")
-				return
-			}
+		containerID := string(buf[:n])
+		log.Println(containerID)
+
+		if _, err := c.Write([]byte(migratedContainerDir)); err != nil {
+			log.Println("Failed to send the migratedContainerDir to client")
+			return
+		}
+		if err := os.MkdirAll(path.Join(migratedContainerDir, containerID), os.ModePerm); err != nil {
+			log.Println("Failed to mkdir ", containerID)
+			return
 		}
 	}
 
