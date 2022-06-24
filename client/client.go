@@ -85,7 +85,7 @@ func transfer(sourcePath string, destIP string, destPath string) (transferTime f
 		//log.Println("Transfer size: ", size, " KB")
 	}
 	dest := destIP + ":" + destPath
-	rsyncOpts := []string{"-aqz", "--bwlimit=500000", sourcePath, dest}
+	rsyncOpts := []string{"-aqz", "--bwlimit=1000000", sourcePath, dest}
 	start := time.Now()
 	if output, err := exec.Command("rsync", rsyncOpts...).Output(); err != nil {
 		log.Println(output)
