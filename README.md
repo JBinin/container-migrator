@@ -18,7 +18,7 @@ docker export $(docker create redis) | tar -C rootfs -xf -
 ## redis 负载实验
 
 ```
-redis-benchmark -t SET -c 10 -n 10000000 -r 10000000 -d 16  > /dev/null
+redis-benchmark -t SET -c 10 -n 10000000 -r 10000000 -d 8  > /dev/null
 
 2022/06/24 16:26:16 client.go:141: -----------------config.json------------------
 2022/06/24 16:26:16 client.go:142: data-size(KB) :  12 	 transfer time(s):  0.594550775
@@ -170,7 +170,7 @@ redis-benchmark -t SET -c 10 -n 10000000 -r 10000000 -d 128  > /dev/null
 2022/06/24 16:12:38 client.go:29: index	 data-size(KB)		 pre-time(s)	 transfer-time(s)
 2022/06/24 16:12:38 client.go:31: 0 	 173000 		 0.234288998 	 4.323033763
 2022/06/24 16:12:38 client.go:31: 1 	 100952 		 0.344862609 	 3.434792983
-2022/06/24 16:12:38 client.go:31: 2 	 85328 		     0.406258923 	 3.30873013
+2022/06/24 16:12:38 client.go:31: 2 	 85328 		   0.406258923 	 3.30873013
 2022/06/24 16:12:38 client.go:31: 3 	 125676 		 0.394847187 	 4.027270468
 2022/06/24 16:12:38 client.go:31: 4 	 106552 		 0.461919357 	 3.996606734
 2022/06/24 16:12:38 client.go:31: 5 	 197496 		 0.428392625 	 5.884052995
