@@ -47,6 +47,9 @@ func preDump(containerId string, index int) (preTime float64, err error) {
 		args = append(args, "--parent-path", "../checkpoint"+strconv.Itoa(index-1))
 	}
 	args = append(args, containerId)
+	cwd, _ := os.Getwd()
+	log.Println("CWD", cwd)
+	log.Println(args)
 	if output, err := exec.Command("runc", args...).Output(); err != nil {
 		log.Println(output)
 		return 0, err
@@ -176,7 +179,7 @@ func syncVolume(destPath string, destIP string, othersPath string) error {
 func PreCopy(containerID string, destIP string, othersPath string) error {
 	defer PrintInfo()
 	oldDir, _ := os.Getwd()
-	basePath := path.Join("/migrator", "redis", containerID)
+	basePath := path.Join("/migrator", containerID)
 	if err := os.RemoveAll(basePath); err != nil {
 		log.Println("Remove ", basePath, " failed")
 		return err
