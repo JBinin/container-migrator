@@ -47,9 +47,6 @@ func preDump(containerId string, index int) (preTime float64, err error) {
 		args = append(args, "--parent-path", "../checkpoint"+strconv.Itoa(index-1))
 	}
 	args = append(args, containerId)
-	cwd, _ := os.Getwd()
-	log.Println("CWD", cwd)
-	log.Println(args)
 	if output, err := exec.Command("runc", args...).Output(); err != nil {
 		log.Println(output)
 		return 0, err
