@@ -8,11 +8,16 @@ ierf -c ip
 
 
 ```server
-./migrator server --migrated_container_dir /home/ubuntu/target
+./migrator server --migrated_container_dir /tmp/target
 ```
 
 ```
 docker export $(docker create redis) | tar -C rootfs -xf -
+```
+
+
+```
+mount -t tmpfs none <dir>
 ```
 
 ## redis 负载实验

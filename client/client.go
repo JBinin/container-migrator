@@ -86,7 +86,7 @@ func transfer(sourcePath string, destIP string, destPath string) (transferTime f
 		//log.Println("Transfer size: ", size, " KB")
 	}
 	dest := destIP + ":" + destPath
-	rsyncOpts := []string{"-aqz", "--bwlimit=125000", sourcePath, dest}
+	rsyncOpts := []string{"-aqz", "--remove-source-files", "--bwlimit=125000", sourcePath, dest}
 	start := time.Now()
 	if output, err := exec.Command("rsync", rsyncOpts...).Output(); err != nil {
 		log.Println(output)
@@ -170,7 +170,7 @@ func syncVolume(destPath string, destIP string, othersPath string) error {
 func PreCopy(containerID string, destIP string, othersPath string) error {
 	defer PrintInfo()
 	oldDir, _ := os.Getwd()
-	basePath := path.Join(oldDir, "redis", containerID)
+	basePath := path.Join("/tmp", "redis", containerID)
 	if err := os.RemoveAll(basePath); err != nil {
 		log.Println("Remove ", basePath, " failed")
 		return err
