@@ -88,7 +88,9 @@ func transfer(sourcePath string, destIP string, destPath string, otherOpts []str
 	dest := destIP + ":" + destPath
 	rsyncOpts := []string{"-aqz", "--bwlimit=125000", sourcePath, dest}
 	if otherOpts != nil {
-		rsyncOpts = append(otherOpts, rsyncOpts...)
+		//rsyncOpts = append(otherOpts, rsyncOpts...)
+		log.Println("debug no remove source")
+		log.Println("debug no remove source")
 	}
 	start := time.Now()
 	if output, err := exec.Command("rsync", rsyncOpts...).Output(); err != nil {
