@@ -77,7 +77,7 @@ func dump(containerID string, index int) (dumpTime float64, err error) {
 	return elapsed.Seconds(), nil
 }
 
-func transfer(sourcePath string, destIP string, destPath string) (transferTime float64, size int, err error) {
+func transfer(sourcePath string, destIP string, destPath string, otherOpts []string) (transferTime float64, size int, err error) {
 	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
 		log.Println(output)
 		return 0, 0, err
@@ -86,7 +86,10 @@ func transfer(sourcePath string, destIP string, destPath string) (transferTime f
 		//log.Println("Transfer size: ", size, " KB")
 	}
 	dest := destIP + ":" + destPath
-	rsyncOpts := []string{"-aqz", "--remove-source-files", "--bwlimit=125000", sourcePath, dest}
+	rsyncOpts := []string{"-aqz", "--bwlimit=125000", sourcePath, dest}
+	if otherOpts != nil {
+		rsyncOpts = append(otherOpts, rsyncOpts...)
+	}
 	start := time.Now()
 	if output, err := exec.Command("rsync", rsyncOpts...).Output(); err != nil {
 		log.Println(output)
@@ -116,7 +119,8 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 			return index, err
 		} else {
 			preDumpPath := path.Join(basePath, "checkpoint"+strconv.Itoa(index))
-			if transferTime, size, err := transfer(preDumpPath, destIP, destPath); err != nil {
+			otherOpts := []string{"--remove-source-files"}
+			if transferTime, size, err := transfer(preDumpPath, destIP, destPath, otherOpts); err != nil {
 				log.Println("The ", index, "iteration transfer pre data failed")
 				return index, err
 			} else {
@@ -136,7 +140,7 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 }
 
 func syncReadOnly(destPath string, destIP string, othersPath string) error {
-	if transferTime, size, err := transfer(path.Join(othersPath, "config.json"), destIP, destPath); err != nil {
+	if transferTime, size, err := transfer(path.Join(othersPath, "config.json"), destIP, destPath, nil); err != nil {
 		log.Println("Failed to sync the config.json")
 		return err
 	} else {
@@ -144,7 +148,7 @@ func syncReadOnly(destPath string, destIP string, othersPath string) error {
 		log.Println("data-size(KB) : ", size, "\t", "transfer time(s): ", transferTime)
 		log.Println("----------------------------------------------")
 	}
-	if transferTime, size, err := transfer(path.Join(othersPath, "rootfs"), destIP, destPath); err != nil {
+	if transferTime, size, err := transfer(path.Join(othersPath, "rootfs"), destIP, destPath, nil); err != nil {
 		log.Println("Failed to sync the rootfs")
 		return err
 	} else {
@@ -156,7 +160,7 @@ func syncReadOnly(destPath string, destIP string, othersPath string) error {
 }
 
 func syncVolume(destPath string, destIP string, othersPath string) error {
-	if transferTime, size, err := transfer(path.Join(othersPath, "data"), destIP, destPath); err != nil {
+	if transferTime, size, err := transfer(path.Join(othersPath, "data"), destIP, destPath, nil); err != nil {
 		log.Println("Failed to sync the volume")
 		return err
 	} else {
@@ -226,7 +230,8 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 			return err
 		} else {
 			dumpPath := path.Join(basePath, "checkpoint")
-			if transferTime, size, err := transfer(dumpPath, destIP, checkpointDestPath); err != nil {
+			otherOpts := []string{"--remove-source-files"}
+			if transferTime, size, err := transfer(dumpPath, destIP, checkpointDestPath, otherOpts); err != nil {
 				log.Println("Transfer dump data failed")
 				return err
 			} else {
