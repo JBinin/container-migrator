@@ -170,7 +170,7 @@ func syncVolume(destPath string, destIP string, othersPath string) error {
 func PreCopy(containerID string, destIP string, othersPath string) error {
 	defer PrintInfo()
 	oldDir, _ := os.Getwd()
-	basePath := path.Join("/tmp", "redis", containerID)
+	basePath := path.Join("/migrator", "redis", containerID)
 	if err := os.RemoveAll(basePath); err != nil {
 		log.Println("Remove ", basePath, " failed")
 		return err
@@ -215,7 +215,7 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 	}
 	defer os.Chdir(oldDir)
 
-	checkpointDestPath := path.Join(destPath, containerID)
+	checkpointDestPath := path.Join("/migrator", containerID)
 	if index, err := iterator(containerID, basePath, destIP, checkpointDestPath); err != nil {
 		log.Println("Iterator transfer failed")
 		return err
