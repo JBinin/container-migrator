@@ -55,7 +55,7 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			log.Println("Failed to send the migratedContainerDir to client")
 			return
 		}
-		if err := os.MkdirAll(path.Join(migratedContainerDir, containerID), os.ModePerm); err != nil {
+		if err := os.MkdirAll(path.Join("/migrator", containerID), os.ModePerm); err != nil {
 			log.Println("Failed to mkdir ", containerID)
 			return
 		}
