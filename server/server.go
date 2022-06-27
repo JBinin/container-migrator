@@ -51,14 +51,19 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 		containerID := string(buf[:n])
 		log.Println(containerID)
 
-		if _, err := c.Write([]byte(migratedContainerDir)); err != nil {
-			log.Println("Failed to send the migratedContainerDir to client")
-			return
+		if err := os.RemoveAll(path.Join("/migrator", containerID)); err != nil {
+			log.Println("Failed to remove ", containerID)
 		}
 		if err := os.MkdirAll(path.Join("/migrator", containerID), os.ModePerm); err != nil {
 			log.Println("Failed to mkdir ", containerID)
 			return
 		}
+
+		if _, err := c.Write([]byte(migratedContainerDir)); err != nil {
+			log.Println("Failed to send the migratedContainerDir to client")
+			return
+		}
+
 	}
 
 	if n, err := c.Read(buf[:]); err != nil {
