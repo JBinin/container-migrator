@@ -177,6 +177,13 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 	}
 	if err := os.MkdirAll(basePath, os.ModePerm); err != nil {
 		log.Println("Mkdir ", basePath, " failed")
+		return err
+	}
+
+	if err := exec.Command("mount", "-t", "tmpfs", "tmpfs", basePath).Run(); err != nil {
+		log.Println(err.Error())
+		log.Println("Failed to mount tmpfs")
+		return err
 	}
 
 	var conn net.Conn
