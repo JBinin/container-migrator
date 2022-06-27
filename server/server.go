@@ -85,6 +85,7 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			start := time.Now()
 			if err := exec.Command("runc", args...).Run(); err != nil {
 				log.Println("Failed to restore the contaier")
+				log.Println(err.Error())
 				return
 			} else {
 				if _, err := c.Write([]byte("started")); err != nil {
@@ -96,5 +97,4 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			log.Println("Restore time is ", elapsed)
 		}
 	}
-	log.Println("Handle finished.")
 }

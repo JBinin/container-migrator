@@ -47,8 +47,8 @@ func preDump(containerId string, index int) (preTime float64, err error) {
 		args = append(args, "--parent-path", "../checkpoint"+strconv.Itoa(index-1))
 	}
 	args = append(args, containerId)
-	if output, err := exec.Command("runc", args...).Output(); err != nil {
-		log.Println(output)
+	if _, err := exec.Command("runc", args...).Output(); err != nil {
+		log.Println(err.Error())
 		return 0, err
 	}
 	elapsed := time.Since(start)
@@ -68,18 +68,17 @@ func dump(containerID string, index int) (dumpTime float64, err error) {
 		"../checkpoint" + strconv.Itoa(index),
 		containerID,
 	}
-	if output, err := exec.Command("runc", args...).Output(); err != nil {
-		log.Println(output)
+	if _, err := exec.Command("runc", args...).Output(); err != nil {
+		log.Println(err.Error())
 		return 0, err
 	}
 	elapsed := time.Since(start)
-	//log.Println("The dump time is ", elapsed)
 	return elapsed.Seconds(), nil
 }
 
 func transfer(sourcePath string, destIP string, destPath string, otherOpts []string) (transferTime float64, size int, err error) {
 	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
-		log.Println(output)
+		log.Println(err.Error())
 		return 0, 0, err
 	} else {
 		size, _ = strconv.Atoi(strings.Split(string(output), "\t")[0])
@@ -91,13 +90,11 @@ func transfer(sourcePath string, destIP string, destPath string, otherOpts []str
 	//	//rsyncOpts = append(otherOpts, rsyncOpts...)
 	//}
 	start := time.Now()
-	if output, err := exec.Command("rsync", rsyncOpts...).Output(); err != nil {
-		log.Println(output)
+	if _, err := exec.Command("rsync", rsyncOpts...).Output(); err != nil {
+		log.Println(err.Error())
 		return 0, size, err
 	}
 	elapsed := time.Since(start)
-	//log.Println("The transfer time is ", elapsed)
-
 	return elapsed.Seconds(), size, nil
 }
 
