@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"errors"
 	"log"
 	"net"
@@ -47,8 +48,13 @@ func preDump(containerId string, index int) (preTime float64, err error) {
 		args = append(args, "--parent-path", "../checkpoint"+strconv.Itoa(index-1))
 	}
 	args = append(args, containerId)
-	if output, err := exec.Command("runc", args...).Output(); err != nil {
+	cmd := exec.Command("runc", args...)
+	var b bytes.Buffer
+	cmd.Stderr = &b
+	if output, err := cmd.Output(); err != nil {
 		log.Println(output)
+		log.Println(b.Bytes())
+		log.Println(cmd.String())
 		return 0, err
 	}
 	elapsed := time.Since(start)
