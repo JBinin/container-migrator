@@ -53,7 +53,7 @@ func preDump(containerId string, index int) (preTime float64, err error) {
 	cmd.Stderr = &b
 	if output, err := cmd.Output(); err != nil {
 		log.Println(output)
-		log.Println(b.Bytes())
+		log.Println(b.String())
 		log.Println(cmd.String())
 		return 0, err
 	}
