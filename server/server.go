@@ -77,7 +77,15 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			cmd := strings.Split(receive, ":")
 			containerID := cmd[1]
 			imagePath := path.Join(migratedContainerDir, containerID, "checkpoint")
-			args := []string{"restore", "-d", "--auto-dedup", "--tcp-established", "--image-path", imagePath, containerID}
+			args := []string{
+				"restore",
+				"-d",
+				//"--auto-dedup",
+				"--tcp-established",
+				"--image-path",
+				imagePath,
+				containerID,
+			}
 
 			oldDir, _ := os.Getwd()
 			os.Chdir(migratedContainerDir)

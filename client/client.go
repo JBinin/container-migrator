@@ -39,7 +39,7 @@ func preDump(containerId string, index int) (preTime float64, err error) {
 	args := []string{
 		"checkpoint",
 		"--pre-dump",
-		"--auto-dedup",
+		//"--auto-dedup",
 		"--tcp-established",
 		"--image-path",
 		"checkpoint" + strconv.Itoa(index),
@@ -67,7 +67,7 @@ func dump(containerID string, index int) (dumpTime float64, err error) {
 	args := []string{
 		"checkpoint",
 		"--tcp-established",
-		"--auto-dedup",
+		//"--auto-dedup",
 		"--image-path",
 		"checkpoint",
 		"--parent-path",
