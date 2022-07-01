@@ -8,7 +8,7 @@ ierf -c ip
 
 
 ```server
-./migrator server --migrated_container_dir /home/ubuntu/target
+./container-migrator/migrator server --migrated_container_dir /home/ubuntu/target
 ```
 
 ```
