@@ -191,7 +191,7 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 		log.Println("Failed to mount tmpfs")
 		return err
 	}
-	defer exec.Command("umount", basePath)
+	defer exec.Command("umount", basePath).Output()
 
 	var conn net.Conn
 	var conErr error

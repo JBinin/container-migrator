@@ -64,7 +64,7 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			log.Println("Failed to mount tmpfs")
 			return
 		}
-		defer exec.Command("umount", path.Join(migratedContainerDir, containerID))
+		defer exec.Command("umount", path.Join(migratedContainerDir, containerID)).Output()
 	}
 
 	if n, err := c.Read(buf[:]); err != nil {
