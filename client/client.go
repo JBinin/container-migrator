@@ -186,12 +186,12 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 		return err
 	}
 
-	if err := exec.Command("mount", "-t", "tmpfs", "tmpfs", basePath).Run(); err != nil {
-		log.Println(err.Error())
-		log.Println("Failed to mount tmpfs")
-		return err
-	}
-	defer exec.Command("umount", basePath).Output()
+	//if err := exec.Command("mount", "-t", "tmpfs", "tmpfs", basePath).Run(); err != nil {
+	//	log.Println(err.Error())
+	//	log.Println("Failed to mount tmpfs")
+	//	return err
+	//}
+	//defer exec.Command("umount", basePath).Output()
 
 	var conn net.Conn
 	var conErr error

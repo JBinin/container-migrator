@@ -59,12 +59,12 @@ func handleConn(c net.Conn, migratedContainerDir string) {
 			log.Println("Failed to mkdir ", containerID)
 			return
 		}
-		if err := exec.Command("mount", "-t", "tmpfs", "tmpfs", path.Join(migratedContainerDir, containerID)).Run(); err != nil {
-			log.Println(err.Error())
-			log.Println("Failed to mount tmpfs")
-			return
-		}
-		defer exec.Command("umount", path.Join(migratedContainerDir, containerID)).Output()
+		//if err := exec.Command("mount", "-t", "tmpfs", "tmpfs", path.Join(migratedContainerDir, containerID)).Run(); err != nil {
+		//	log.Println(err.Error())
+		//	log.Println("Failed to mount tmpfs")
+		//	return
+		//}
+		//defer exec.Command("umount", path.Join(migratedContainerDir, containerID)).Output()
 	}
 
 	if n, err := c.Read(buf[:]); err != nil {
