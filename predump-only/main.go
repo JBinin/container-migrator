@@ -20,7 +20,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 
 	//timeInv := 500
 	//maxIteration := 30 * 1000 / timeInv
-	maxIteration := 120
+	maxIteration := 60
 	dumpTime := make([]float64, maxIteration)
 	defer printPreTime(dumpTime)
 
