@@ -16,6 +16,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	os.MkdirAll(checkpointPath, os.ModePerm)
 
 	oldPath, _ := os.Getwd()
+	os.Chdir(checkpointPath)
 	defer os.Chdir(oldPath)
 
 	timeInv := 100
