@@ -11,8 +11,8 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	defer killContainer(containerID)
 
 	log.Println(checkpointPath)
-	os.RemoveAll(checkpointPath)
-	os.MkdirAll(checkpointPath, os.ModePerm)
+	//os.RemoveAll(checkpointPath)
+	//os.MkdirAll(checkpointPath, os.ModePerm)
 
 	oldPath, _ := os.Getwd()
 	os.Chdir(checkpointPath)
