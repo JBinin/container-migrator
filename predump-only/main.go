@@ -19,7 +19,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	os.Chdir(checkpointPath)
 	defer os.Chdir(oldPath)
 
-	timeInv := 100
+	timeInv := 500
 	maxIteration := 60 * 1000 / timeInv
 	dumpTime := make([]float64, maxIteration)
 	defer printPreTime(dumpTime)
