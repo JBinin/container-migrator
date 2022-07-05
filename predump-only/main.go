@@ -19,7 +19,7 @@ func TestDump(containerID string, checkpointPath string) error {
 
 	timeInv := 100
 	maxIteration := 1 * 1000 / 100
-	for i := 0; i < 10; i += maxIteration {
+	for i := 0; i < maxIteration; i += 1 {
 		client.PreDump(containerID, i)
 		log.Println("Checkpoint dump index: ", i)
 		time.Sleep(time.Duration(timeInv) * time.Millisecond)
