@@ -2,11 +2,15 @@ package predump_only
 
 import (
 	"github.com/JBinin/container-migrator/client"
+	"log"
 	"os"
+	"os/exec"
 	"time"
 )
 
 func TestDump(containerID string, checkpointPath string) error {
+	defer killContainer(containerID)
+
 	os.RemoveAll(checkpointPath)
 	os.MkdirAll(checkpointPath, os.ModePerm)
 
@@ -20,4 +24,10 @@ func TestDump(containerID string, checkpointPath string) error {
 		time.Sleep(time.Duration(timeInv) * time.Millisecond)
 	}
 	return nil
+}
+
+func killContainer(containerID string) error {
+	cmd := exec.Command("runc", "kill", containerID, "9")
+	log.Println(cmd.String())
+	return cmd.Start()
 }
