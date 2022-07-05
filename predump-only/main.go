@@ -2,19 +2,16 @@ package predump_only
 
 import (
 	"github.com/JBinin/container-migrator/client"
-	"log"
 	"os"
 	"time"
 )
 
 func TestDump(containerID string, checkpointPath string) error {
+	os.RemoveAll(checkpointPath)
+	os.MkdirAll(checkpointPath, os.ModePerm)
+
 	oldPath, _ := os.Getwd()
 	defer os.Chdir(oldPath)
-
-	if err := os.Chdir(checkpointPath); err != nil {
-		log.Println("Failed to chdir to ", checkpointPath)
-		log.Println("Use the current work dir")
-	}
 
 	timeInv := 100
 	maxIteration := 1 * 1000 / 100
