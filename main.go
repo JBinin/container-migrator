@@ -105,7 +105,12 @@ func main() {
 					},
 				},
 				Action: func(context *cli.Context) error {
-					return predump_only.TestDump(containerId, checkpointPath)
+					channel := make(chan int, 1)
+
+					predump_only.TestDump(containerId, checkpointPath, &channel)
+					v, _ := <-channel
+					log.Println(v)
+					return nil
 				},
 			},
 		},
