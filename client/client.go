@@ -34,7 +34,7 @@ func PrintInfo() {
 	log.Println("--------------------------------------------------------------------")
 }
 
-func preDump(containerId string, index int) (preTime float64, err error) {
+func PreDump(containerId string, index int) (preTime float64, err error) {
 	start := time.Now()
 	args := []string{
 		"checkpoint",
@@ -117,7 +117,7 @@ func iterator(containerID string, basePath string, destIP string, destPath strin
 
 	for i := 0; i < 10; i += 1 {
 		index = i
-		if preTime, err := preDump(containerID, i); err != nil {
+		if preTime, err := PreDump(containerID, i); err != nil {
 			log.Println("The ", index, "iteration pre dump failed ")
 			return index, err
 		} else {
