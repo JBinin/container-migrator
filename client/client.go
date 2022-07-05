@@ -43,10 +43,10 @@ func PreDump(containerId string, index int) (preTime float64, err error) {
 		//"--auto-dedup",
 		"--tcp-established",
 		"--image-path",
-		fmt.Sprintf("checkpoint%3d", index),
+		fmt.Sprintf("checkpoint%03d", index),
 	}
 	if index != 0 {
-		args = append(args, "--parent-path", fmt.Sprintf("../checkpoint%3d", index-1))
+		args = append(args, "--parent-path", fmt.Sprintf("../checkpoint%03d", index-1))
 	}
 	args = append(args, containerId)
 	cmd := exec.Command("runc", args...)
@@ -72,7 +72,7 @@ func dump(containerID string, index int) (dumpTime float64, err error) {
 		"--image-path",
 		"checkpoint",
 		"--parent-path",
-		fmt.Sprintf("../checkpoint%3d", index),
+		fmt.Sprintf("../checkpoint%03d", index),
 		containerID,
 	}
 	if output, err := exec.Command("runc", args...).Output(); err != nil {
