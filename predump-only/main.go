@@ -27,7 +27,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	for i := 0; i < maxIteration; i += 1 {
 		preTime, _ := client.PreDump(containerID, i)
 		dumpTime[i] = preTime
-		log.Println("Checkpoint dump index: ", i)
+		log.Printf("Checkpoint dump index: %3d", i)
 		time.Sleep(time.Duration(timeInv) * time.Millisecond)
 	}
 	*channel <- 1
