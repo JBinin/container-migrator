@@ -43,17 +43,29 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 		dedupFactor[i] = 1
 	}
 	defer printPreInfo(dumpTime, dumpSize, xferTime)
-
+	last := false
 	for i := 0; i < maxIteration; i += 1 {
-		preTime, _ := client.PreDump(containerID, i)
-		dumpTime[i] = preTime
-		size, _ := getSize(path.Join(checkpointPath, fmt.Sprintf("checkpoint%03d", i)))
-		dumpSize[i] = size
+		if (i != 0 && dumpTime[i-1]+xferTime[i-1] < 1) || i == maxIteration-1 {
+			dumptime, _ := client.Dump(containerID, i)
+			dumpTime[i] = dumptime
+			size, _ := getSize(path.Join(checkpointPath, "checkpoint"))
+			dumpSize[i] = size
+			last = true
+		} else {
+			preTime, _ := client.PreDump(containerID, i)
+			dumpTime[i] = preTime
+			size, _ := getSize(path.Join(checkpointPath, fmt.Sprintf("checkpoint%03d", i)))
+			dumpSize[i] = size
+		}
+
 		log.Printf("Checkpoint dump index: %03d", i)
-		timeSleep := float64(size*8*1024*1000) / netSpeed
+		timeSleep := float64(dumpSize[i]*8*1024*1000) / netSpeed
 		timeSleep = timeSleep * dedupFactor[i]
-		xferTime[i] = timeSleep
+		xferTime[i] = timeSleep / 1000
 		time.Sleep(time.Duration(int64(timeSleep)) * time.Millisecond)
+		if last {
+			break
+		}
 	}
 	*channel <- 1
 	return nil
@@ -67,6 +79,6 @@ func killContainer(containerID string) error {
 
 func printPreInfo(preTime []float64, preSize []int, xferTime []float64) {
 	for i, t := range preTime {
-		log.Println(i, ":\t", t, "s\t", preSize[i], "KB\t", xferTime[i])
+		log.Println(i, ":\t", t, "s\t", float64(preSize[i])/1024, "MB\t", xferTime[i], "s")
 	}
 }

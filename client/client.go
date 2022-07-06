@@ -63,7 +63,7 @@ func PreDump(containerId string, index int) (preTime float64, err error) {
 	return elapsed.Seconds(), nil
 }
 
-func dump(containerID string, index int) (dumpTime float64, err error) {
+func Dump(containerID string, index int) (dumpTime float64, err error) {
 	start := time.Now()
 	args := []string{
 		"checkpoint",
@@ -236,7 +236,7 @@ func PreCopy(containerID string, destIP string, othersPath string) error {
 		return err
 	} else {
 		start := time.Now()
-		if dumpTime, err := dump(containerID, index); err != nil {
+		if dumpTime, err := Dump(containerID, index); err != nil {
 			log.Println("Dump data failed")
 			return err
 		} else {
