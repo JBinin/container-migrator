@@ -12,16 +12,14 @@ import (
 	"time"
 )
 
-func getSize(sourcePath string) (size int, err error) {
+func getSize(sourcePath string) (int, error) {
 	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
 		log.Println(output)
-		size = 0
-		return
+		return 0, err
 	} else {
-		size, _ = strconv.Atoi(strings.Split(string(output), "\t")[0])
+		size, _ := strconv.Atoi(strings.Split(string(output), "\t")[0])
+		return size, nil
 	}
-	//log.Println("Transfer size: ", size, " KB")
-	return
 }
 
 func TestDump(containerID string, checkpointPath string, channel *chan int) error {
