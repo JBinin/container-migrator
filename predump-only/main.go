@@ -1,12 +1,28 @@
 package predump_only
 
 import (
+	"fmt"
 	"github.com/JBinin/container-migrator/client"
 	"log"
 	"os"
 	"os/exec"
+	"path"
+	"strconv"
+	"strings"
 	"time"
 )
+
+func getSize(sourcePath string) (size int, err error) {
+	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
+		log.Println(output)
+		size = 0
+		return
+	} else {
+		size, _ = strconv.Atoi(strings.Split(string(output), "\t")[0])
+	}
+	//log.Println("Transfer size: ", size, " KB")
+	return
+}
 
 func TestDump(containerID string, checkpointPath string, channel *chan int) error {
 	defer killContainer(containerID)
@@ -19,16 +35,24 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	os.Chdir(checkpointPath)
 	defer os.Chdir(oldPath)
 
-	timeInv := 500
-	maxIteration := 60 * 1000 / timeInv
+	netSpeed := 1e9
+	maxIteration := 10
 	dumpTime := make([]float64, maxIteration)
-	defer printPreTime(dumpTime)
+	dumpSize := make([]int, maxIteration)
+	xferTime := make([]float64, maxIteration)
+	dedupFactor := make([]float64, maxIteration, 1)
+	defer printPreInfo(dumpTime, dumpSize, xferTime)
 
 	for i := 0; i < maxIteration; i += 1 {
 		preTime, _ := client.PreDump(containerID, i)
 		dumpTime[i] = preTime
+		size, _ := getSize(path.Join(checkpointPath, fmt.Sprintf("checkpoint%03d", i)))
+		dumpSize[i] = size
 		log.Printf("Checkpoint dump index: %03d", i)
-		time.Sleep(time.Duration(timeInv) * time.Millisecond)
+		timeSleep := float64(size*8*1024*1000) / netSpeed
+		timeSleep = timeSleep * dedupFactor[i]
+		xferTime[i] = timeSleep
+		time.Sleep(time.Duration(int64(timeSleep)) * time.Millisecond)
 	}
 	*channel <- 1
 	return nil
@@ -40,8 +64,8 @@ func killContainer(containerID string) error {
 	return cmd.Start()
 }
 
-func printPreTime(preTime []float64) {
+func printPreInfo(preTime []float64, preSize []int, xferTime []float64) {
 	for i, t := range preTime {
-		log.Println(i, ":\t", t, "s")
+		log.Println(i, ":\t", t, "s\t", preSize[i], "KB\t", xferTime[i])
 	}
 }
