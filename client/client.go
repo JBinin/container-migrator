@@ -75,8 +75,13 @@ func Dump(containerID string, index int) (dumpTime float64, err error) {
 		fmt.Sprintf("../checkpoint%03d", index),
 		containerID,
 	}
-	if output, err := exec.Command("runc", args...).Output(); err != nil {
+	cmd := exec.Command("runc", args...)
+	var b bytes.Buffer
+	cmd.Stderr = &b
+	if output, err := cmd.Output(); err != nil {
 		log.Println(output)
+		log.Println(b.String())
+		log.Println(cmd.String())
 		return 0, err
 	}
 	elapsed := time.Since(start)
