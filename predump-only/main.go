@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func TestDump(containerID string, checkpointPath string, channel *chan int) error {
@@ -18,9 +19,8 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	os.Chdir(checkpointPath)
 	defer os.Chdir(oldPath)
 
-	//timeInv := 500
-	//maxIteration := 30 * 1000 / timeInv
-	maxIteration := 60
+	timeInv := 500
+	maxIteration := 60 * 1000 / timeInv
 	dumpTime := make([]float64, maxIteration)
 	defer printPreTime(dumpTime)
 
@@ -28,7 +28,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 		preTime, _ := client.PreDump(containerID, i)
 		dumpTime[i] = preTime
 		log.Printf("Checkpoint dump index: %03d", i)
-		//time.Sleep(time.Duration(timeInv) * time.Millisecond)
+		time.Sleep(time.Duration(timeInv) * time.Millisecond)
 	}
 	*channel <- 1
 	return nil
