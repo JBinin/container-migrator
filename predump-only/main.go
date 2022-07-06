@@ -38,7 +38,10 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	dumpTime := make([]float64, maxIteration)
 	dumpSize := make([]int, maxIteration)
 	xferTime := make([]float64, maxIteration)
-	dedupFactor := make([]float64, maxIteration, 1)
+	dedupFactor := make([]float64, maxIteration)
+	for i := 0; i < maxIteration; i += 1 {
+		dedupFactor[i] = 1
+	}
 	defer printPreInfo(dumpTime, dumpSize, xferTime)
 
 	for i := 0; i < maxIteration; i += 1 {
