@@ -43,7 +43,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 		dedupFactor[i] = 1
 	}
 	dedupFactor[0] = 0.72
-	defer printPreInfo(dumpTime, dumpSize, xferTime)
+	defer printPreInfo(dumpTime, dumpSize, xferTime, dedupFactor)
 	last := false
 	for i := 0; i < maxIteration; i += 1 {
 		if (i != 0 && dumpTime[i-1]+xferTime[i-1] < 1) || i == maxIteration-1 {
@@ -61,9 +61,8 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 
 		log.Printf("Checkpoint dump index: %03d", i)
 		timeSleep := float64(dumpSize[i]*8*1024*1000) / netSpeed
-		timeSleep = timeSleep * dedupFactor[i]
 		xferTime[i] = timeSleep / 1000
-		time.Sleep(time.Duration(int64(timeSleep)) * time.Millisecond)
+		time.Sleep(time.Duration(int64(timeSleep*dedupFactor[i])) * time.Millisecond)
 		if last {
 			break
 		}
@@ -78,8 +77,8 @@ func killContainer(containerID string) error {
 	return cmd.Start()
 }
 
-func printPreInfo(preTime []float64, preSize []int, xferTime []float64) {
+func printPreInfo(preTime []float64, preSize []int, xferTime []float64, dedepFactor []float64) {
 	for i, t := range preTime {
-		log.Println(i, ":\t", t, "s\t", float64(preSize[i])/1024, "MB\t", xferTime[i], "s")
+		log.Println(i, ":\t", t, "s\t", float64(preSize[i])/1024, "MB\t", xferTime[i], "s\t", xferTime[i]*dedepFactor[i], "s")
 	}
 }
