@@ -42,6 +42,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	for i := 0; i < maxIteration; i += 1 {
 		dedupFactor[i] = 1
 	}
+	dedupFactor[0] = 0.28
 	defer printPreInfo(dumpTime, dumpSize, xferTime)
 	last := false
 	for i := 0; i < maxIteration; i += 1 {
