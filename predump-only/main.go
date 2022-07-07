@@ -20,7 +20,7 @@ func DumpRuning(containerID string, index int) (dumpTime float64, err error) {
 		"--tcp-established",
 		"--leave-running",
 		"--image-path",
-		fmt.Sprintf("../checkpoint%03d", index),
+		fmt.Sprintf("checkpoint%03d", index),
 	}
 	if index != 0 {
 		args = append(args, "--parent-path", fmt.Sprintf("../checkpoint%03d", index-1))
