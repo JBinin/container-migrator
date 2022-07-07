@@ -17,7 +17,7 @@ func DumpRuning(containerID string, index int) (dumpTime float64, err error) {
 	args := []string{
 		"checkpoint",
 		"--tcp-established",
-		"--leave-running",
+		//"--leave-running",
 		"--image-path",
 		fmt.Sprintf("checkpoint%03d", index),
 	}
@@ -61,7 +61,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	defer os.Chdir(oldPath)
 
 	netSpeed := 1e9
-	maxIteration := 2
+	maxIteration := 1
 	dumpTime := make([]float64, maxIteration)
 	dumpSize := make([]int, maxIteration)
 	xferTime := make([]float64, maxIteration)
