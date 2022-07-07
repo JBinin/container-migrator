@@ -3,7 +3,6 @@ package predump_only
 import (
 	"bytes"
 	"fmt"
-	"github.com/JBinin/container-migrator/client"
 	"log"
 	"os"
 	"os/exec"
@@ -62,7 +61,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	defer os.Chdir(oldPath)
 
 	netSpeed := 1e9
-	maxIteration := 10
+	maxIteration := 2
 	dumpTime := make([]float64, maxIteration)
 	dumpSize := make([]int, maxIteration)
 	xferTime := make([]float64, maxIteration)
@@ -75,7 +74,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	last := false
 	for i := 0; i < maxIteration; i += 1 {
 		if (i != 0 && dumpTime[i-1]+xferTime[i-1] < 1) || i == maxIteration-1 {
-			dumptime, _ := client.Dump(containerID, i-1)
+			dumptime, _ := DumpRuning(containerID, i-1)
 			dumpTime[i] = dumptime
 			size, _ := getSize(path.Join(checkpointPath, "checkpoint"))
 			dumpSize[i] = size
