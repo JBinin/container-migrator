@@ -1,6 +1,7 @@
 package predump_only
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/JBinin/container-migrator/client"
 	"log"
@@ -11,6 +12,33 @@ import (
 	"strings"
 	"time"
 )
+
+func DumpRuning(containerID string, index int) (dumpTime float64, err error) {
+	start := time.Now()
+	args := []string{
+		"checkpoint",
+		"--tcp-established",
+		"--leave-running",
+		"--image-path",
+		fmt.Sprintf("../checkpoint%03d", index),
+	}
+	if index != 0 {
+		args = append(args, "--parent-path", fmt.Sprintf("../checkpoint%03d", index-1))
+	}
+	args = append(args, containerID)
+	cmd := exec.Command("runc", args...)
+	var b bytes.Buffer
+	cmd.Stderr = &b
+	if output, err := cmd.Output(); err != nil {
+		log.Println(output)
+		log.Println(b.String())
+		log.Println(cmd.String())
+		return 0, err
+	}
+	elapsed := time.Since(start)
+	//log.Println("The dump time is ", elapsed)
+	return elapsed.Seconds(), nil
+}
 
 func getSize(sourcePath string) (int, error) {
 	if output, err := exec.Command("du", "-s", sourcePath).Output(); err != nil {
@@ -42,7 +70,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	for i := 0; i < maxIteration; i += 1 {
 		dedupFactor[i] = 1
 	}
-	dedupFactor[0] = 0.72
+	//dedupFactor[0] = 0.72
 	defer printPreInfo(dumpTime, dumpSize, xferTime, dedupFactor)
 	last := false
 	for i := 0; i < maxIteration; i += 1 {
@@ -53,7 +81,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 			dumpSize[i] = size
 			last = true
 		} else {
-			preTime, _ := client.PreDump(containerID, i)
+			preTime, _ := DumpRuning(containerID, i)
 			dumpTime[i] = preTime
 			size, _ := getSize(path.Join(checkpointPath, fmt.Sprintf("checkpoint%03d", i)))
 			dumpSize[i] = size
