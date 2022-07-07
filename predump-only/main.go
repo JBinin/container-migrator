@@ -22,9 +22,9 @@ func DumpRuning(containerID string, index int) (dumpTime float64, err error) {
 		"--image-path",
 		fmt.Sprintf("checkpoint%03d", index),
 	}
-	if index != 0 {
-		args = append(args, "--parent-path", fmt.Sprintf("../checkpoint%03d", index-1))
-	}
+	//if index != 0 {
+	//	args = append(args, "--parent-path", fmt.Sprintf("../checkpoint%03d", index-1))
+	//}
 	args = append(args, containerID)
 	cmd := exec.Command("runc", args...)
 	var b bytes.Buffer
