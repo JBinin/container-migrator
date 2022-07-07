@@ -74,7 +74,7 @@ func TestDump(containerID string, checkpointPath string, channel *chan int) erro
 	last := false
 	for i := 0; i < maxIteration; i += 1 {
 		if (i != 0 && dumpTime[i-1]+xferTime[i-1] < 1) || i == maxIteration-1 {
-			dumptime, _ := DumpRuning(containerID, i-1)
+			dumptime, _ := DumpRuning(containerID, i)
 			dumpTime[i] = dumptime
 			size, _ := getSize(path.Join(checkpointPath, "checkpoint"))
 			dumpSize[i] = size
